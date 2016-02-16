@@ -49,6 +49,9 @@ AM_PATH_SDL(1.1.3)
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 LDFLAGS="$LDFLAGS $SDL_LIBS"
 
+# add fopenmp flag
+CFLAGS="$CFLAGS -fopenmp"
+
 # On some platforms, SDL renames main() to SDL_main() using a #define,
 # so that its own main, stored in the SDLmain library, can be run first.
 # Unfortunately, this causes problems for autoconf, which builds
