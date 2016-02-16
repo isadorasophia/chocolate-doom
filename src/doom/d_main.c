@@ -276,7 +276,6 @@ void D_Display (void)
     if (testcontrols)
     {
         // Box showing current mouse speed
-
         V_DrawMouseSpeedBox(testcontrols_mousespeed);
     }
 
@@ -298,15 +297,16 @@ void D_Display (void)
 
 
     // menus go directly to the screen
+    #pragma omp task
     M_Drawer ();          // menu is drawn even on top of everything
+
+    #pragma omp task
     NetUpdate ();         // send out any new accumulation
 
 
     // normal update
     if (!wipe)
     {
-    #pragma omp parallel
-    #pragma omp single
     #pragma omp task
 	I_FinishUpdate ();              // page flip or blit buffer
 	return;
@@ -332,8 +332,6 @@ void D_Display (void)
 	I_UpdateNoBlit ();
 	M_Drawer ();                            // menu is drawn even on top of wipes
 
-    #pragma omp parallel
-    #pragma omp single
     #pragma omp task
 	I_FinishUpdate ();                      // page flip or blit buffer
     } while (!done); 
@@ -450,6 +448,10 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
 
+    #pragma omp parallel
+    {
+    #pragma omp single
+    {
     while (1)
     {
 	// frame syncronous IO operations
@@ -463,6 +465,8 @@ void D_DoomLoop (void)
         if (screenvisible)
             D_Display ();
     }
+    } // single
+    } // parallel
 }
 
 
