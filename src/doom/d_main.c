@@ -187,7 +187,10 @@ void D_Display (void)
 
     if (nodrawers)
 	return;                    // for comparative timing / profiling
-		
+	
+    #pragma omp task firstprivate(viewactivestate, menuactivestate, inhelpscreensstate, \
+    fullscreen, oldgamestate, borderdrawcount, nowtime, tics, wipestart, y, done, wipe, redrawsbar)
+    {	
     redrawsbar = false;
     
     // change the view size if needed
@@ -297,18 +300,16 @@ void D_Display (void)
 
 
     // menus go directly to the screen
-    #pragma omp task
     M_Drawer ();          // menu is drawn even on top of everything
 
-    #pragma omp task
     NetUpdate ();         // send out any new accumulation
-
+    }
 
     // normal update
     if (!wipe)
     {
-    #pragma omp task
-	I_FinishUpdate ();              // page flip or blit buffer
+    I_FinishUpdate ();              // page flip or blit buffer
+
 	return;
     }
     
@@ -332,7 +333,6 @@ void D_Display (void)
 	I_UpdateNoBlit ();
 	M_Drawer ();                            // menu is drawn even on top of wipes
 
-    #pragma omp task
 	I_FinishUpdate ();                      // page flip or blit buffer
     } while (!done); 
 }
@@ -457,7 +457,7 @@ void D_DoomLoop (void)
 	// frame syncronous IO operations
 	I_StartFrame ();
 
-        TryRunTics (); // will run at least one tic
+    TryRunTics (); // will run at least one tic
 
 	S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
 
@@ -465,8 +465,8 @@ void D_DoomLoop (void)
         if (screenvisible)
             D_Display ();
     }
-    } // single
-    } // parallel
+    }
+    }
 }
 
 
